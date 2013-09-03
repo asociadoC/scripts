@@ -11,7 +11,7 @@ if [ $MYUID == "root" ]; then
         exit 1
 fi
 
-REMOTE=192.168.200.55
+REMOTE=192.168.120.55
 
 compare() {
 
@@ -23,7 +23,7 @@ compare() {
         echo $VLOCAL
 
         echo -n "Remote Version : "
-        VREMOTE=`ssh 192.168.200.55 "( cd /scriptcenter ; md5sum rc.firewall )" | awk '{ print $1 }'`
+        VREMOTE=`ssh 192.168.120.55 "( cd /scripts ; md5sum rc.firewall )" | awk '{ print $1 }'`
         echo $VREMOTE
 
         if [ "$VLOCAL" == "$VREMOTE" ]; then
@@ -57,7 +57,7 @@ syncScripts() {
         ecoh
         echo "Trying sync "
 
-        tar cf - rc.firewall | ssh $REMOTE "( cd /scriptcenter ; sudo tar xf - )"
+        tar cf - rc.firewall | ssh $REMOTE "( cd /scripts ; sudo tar xf - )"
 
         if [ $? -eq 0 ]; then
                 echo "OK, rc.firewall synced to $REMOTE"
@@ -75,7 +75,7 @@ applyRulesRemote() {
 
         case $APPLY in
                 y)
-                if ssh $REMOTE "( cd /scriptcenter ; sudo sh rc.firewall stop && sudo sh rc.firewall start )" ; then
+                if ssh $REMOTE "( cd /scripts ; sudo sh rc.firewall stop && sudo sh rc.firewall start )" ; then
                         echo "applied rules on $REMOTE"
                 else
                         echo "ERROR, please check on $REMOTE"
