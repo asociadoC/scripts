@@ -1,0 +1,68 @@
+#!/bin/sh
+
+# APPLICATION BASE ON SERVER 
+BASE="/srv/xxx/www"
+# WHERE IN SUBVERSION DOES IT RESIDE 
+SVNBASE="/xxx/branches/1.0"
+# URL TO SUBVERSION no trailing slash !
+SVN="http://svn.xxxxx.net/svn/xxxxx"
+STARTDIR=`pwd`
+
+
+showUsage() {
+cat <<EOF
+
+Usage: $0 OPTION
+        -u      update application
+        -i      get information from subversion
+        -h      show this help
+
+EOF
+}
+
+doUpdate() {
+
+        svn log --verbose -r HEAD http://svn.xxxxx.net/svn/<REPO>/<APPLICATION>/branches
+
+        for LINE in `svn log --verbose -r HEAD http://svn.xxxxx.net/svn/<REPO>/<APPLICATION>/branches | grep "^   " | awk '{ print $2 }' ` ; do
+                #echo $LINE
+                SVNPATH=`echo $LINE | awk -F"$SVNBASE" '{ print $2 }'`
+                #echo "SVN PATH: $SVNPATH"
+                LOCALDIR=`dirname $SVNPATH`
+                        #echo "LOCALDIR: $BASE/$LOCALDIR"
+
+                cd $BASE/$LOCALDIR
+
+                #pwd
+                if svn export --force $SVN/$LINE ; then
+                        echo "exported $SVN/$LINE to $BASE/$LOCALDIR "
+                else
+                        echo "error exporting $SVN/$LINE to $BASE/$LOCALDIR "
+                        exit 1
+                        fi
+        done
+        cd $STARTDIR
+}
+
+while getopts "hui" arg; do
+        case $arg in
+                h)
+                        showUsage
+                        exit 0
+                ;;
+                i)
+                        svn log --verbose -r HEAD http://svn.xxxxx.net/svn/<REPO>/<APPLICATION>/branches
+                        exit 0
+                ;;
+                u)
+                        doUpdate
+                        exit 0
+                ;;
+                *)
+                        showUsage
+                        exit 0
+                ;;
+        esac
+done
+
+showUsage
